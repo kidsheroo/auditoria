@@ -86,9 +86,16 @@ export default function App() {
       <aside className="glass w-64 shrink-0 flex flex-col py-6 px-4 z-10">
         {/* Logo */}
         <div className="flex items-center gap-2 mb-8 px-2">
-          <div className="w-9 h-9 rounded-xl btn-gradient flex items-center justify-center text-white font-bold text-lg shadow-md">
-            A
-          </div>
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="logo-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#22c55e"/>
+                <stop offset="100%" stopColor="#06b6d4"/>
+              </linearGradient>
+            </defs>
+            <path d="M18 3L31 30H5L18 3Z" fill="url(#logo-g)"/>
+            <rect x="11.5" y="21.5" width="13" height="2.5" rx="1.25" fill="white" opacity="0.9"/>
+          </svg>
           <span className="text-xl font-semibold text-gray-800">Auditoria</span>
         </div>
 
@@ -124,16 +131,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Decorative planet */}
-        <div className="mt-6 flex justify-center">
-          <div
-            className="w-20 h-20 rounded-full"
-            style={{
-              background: "radial-gradient(circle at 35% 35%, #c4b5fd, #818cf8, #4f46e5)",
-              boxShadow: "0 0 30px rgba(129,140,248,0.4)",
-            }}
-          />
-        </div>
       </aside>
 
       {/* MAIN */}

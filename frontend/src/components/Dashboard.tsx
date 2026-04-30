@@ -17,8 +17,7 @@ function usd(n: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(n);
 }
 
-const STAT_PAGES: { page: NavPage; label: string; type: WastingItem["entity_type"] | null; icon: string }[] = [
-  { page: "campaign",    label: "Campaigns",    type: "campaign",    icon: "🗂" },
+const STAT_PAGES: { page: NavPage; label: string; type: WastingItem["entity_type"]; icon: string }[] = [
   { page: "ad_group",   label: "Ad Groups",    type: "ad_group",    icon: "📦" },
   { page: "keyword",    label: "Keywords",     type: "keyword",     icon: "🔍" },
   { page: "search_term",label: "Search Terms", type: "search_term", icon: "🔎" },
@@ -70,7 +69,7 @@ function ReportsPage({ result, lastReq }: { result: AuditResult; lastReq: AuditR
 
 export default function Dashboard({ result, lastReq, activePage, onNavigate, onRerun }: Props) {
   const tableData: WastingItem[] =
-    activePage === "all" || activePage === "overview"
+    activePage === "overview"
       ? result.items
       : result.items.filter((i) => i.entity_type === activePage);
 
@@ -91,8 +90,7 @@ export default function Dashboard({ result, lastReq, activePage, onNavigate, onR
               hour: "2-digit", minute: "2-digit",
             })} ·{" "}
             <span
-              className="text-[#7f7fd5] cursor-pointer font-medium"
-              onClick={() => onNavigate("all")}
+              className="text-[#7f7fd5] font-medium"
             >
               last {result.date_range.replace("LAST_", "").replace("_DAYS", " days").toLowerCase()}
             </span>
@@ -160,7 +158,7 @@ export default function Dashboard({ result, lastReq, activePage, onNavigate, onR
           {/* Quick wins strip */}
           {(quickWins > 0 || scaling > 0) && (
             <button
-              onClick={() => onNavigate("opportunities")}
+              onClick={() => onNavigate("todo")}
               className="w-full glass rounded-2xl px-6 py-4 flex items-center justify-between hover:bg-white/60 transition-colors text-left"
             >
               <div className="flex items-center gap-3">
@@ -185,10 +183,9 @@ export default function Dashboard({ result, lastReq, activePage, onNavigate, onR
       )}
 
       {/* Filtered table pages */}
-      {["all", "campaign", "ad_group", "keyword", "search_term", "ad"].includes(activePage) &&
-        activePage !== "overview" && (
+      {(["ad_group", "keyword", "search_term", "ad"] as NavPage[]).includes(activePage) && (
         <div className="glass rounded-3xl p-6">
-          <AuditTable data={tableData} showEntityType={activePage === "all"} />
+          <AuditTable data={tableData} showEntityType={false} />
         </div>
       )}
 
@@ -199,8 +196,8 @@ export default function Dashboard({ result, lastReq, activePage, onNavigate, onR
         </div>
       )}
 
-      {/* Opportunities */}
-      {activePage === "opportunities" && (
+      {/* To Do */}
+      {activePage === "todo" && (
         <OpportunityDeck recommendations={result.recommendations} />
       )}
 
