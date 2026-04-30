@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+google-ads>=24.0.0
+google-auth-oauthlib
+itsdangerous
+python-dotenv
+httpx
+pydantic
+starlette

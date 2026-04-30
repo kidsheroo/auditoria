@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { font-family: 'Inter', sans-serif; }
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background:
+    radial-gradient(circle at 15% 25%, #d1fae5 0%, transparent 45%),
+    radial-gradient(circle at 85% 15%, #bfdbfe 0%, transparent 45%),
+    linear-gradient(135deg, #f0fdf4, #eff6ff, #ecfeff);
+}
+
+/* Orb — teal/blue to match logo */
+.orb {
+  position: fixed;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, #6ee7b7, #38bdf8);
+  filter: blur(90px);
+  opacity: 0.3;
+  top: 40px;
+  right: 60px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Glass */
+.glass {
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+.glass-light {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Gradient text — green to blue matching logo */
+.gradient-text {
+  background: linear-gradient(135deg, #16a34a, #0284c7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Primary button gradient */
+.btn-gradient {
+  background: linear-gradient(135deg, #22c55e, #06b6d4);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-gradient:hover { opacity: 0.88; }
+
+/* Nav active state */
+.nav-active {
+  background: linear-gradient(135deg, #22c55e, #06b6d4) !important;
+  color: white !important;
+}
+
+/* Reason badges */
+.tag-high-cpa {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 10px;
+  background: rgba(239,68,68,0.12);
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 500;
+}
+.tag-zero-conv {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 10px;
+  background: rgba(14,165,233,0.12);
+  color: #0284c7;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Scrollable main */
+.main-scroll {
+  overflow-y: auto;
+  height: 100%;
+}
+.main-scroll::-webkit-scrollbar { width: 5px; }
+.main-scroll::-webkit-scrollbar-thumb { background: rgba(34,197,94,0.25); border-radius: 10px; }
+
+/* Table */
+.audit-table tbody tr { border-top: 1px solid rgba(0,0,0,0.04); }
+.audit-table tbody tr:hover { background: rgba(255,255,255,0.45); }
