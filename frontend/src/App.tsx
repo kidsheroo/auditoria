@@ -50,17 +50,20 @@ export default function App() {
   const [auditError, setAuditError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
 
-  const statusQuery = useQuery({
-    queryKey: ["status"],
-    queryFn: () =>
-      fetch(`${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/auth/status`, { credentials: "include" })
-        .then((r) => r.json()) as Promise<{ ready: boolean }>,
+  const [ready] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("connected") === "1") {
+      localStorage.setItem("connected", "1");
+      window.history.replaceState({}, "", "/");
+      return true;
+    }
+    return localStorage.getItem("connected") === "1";
   });
 
   const accountsQuery = useQuery({
     queryKey: ["accounts"],
     queryFn: getAccounts,
-    enabled: statusQuery.data?.ready === true,
+    enabled: ready,
   });
 
   const handleRunAudit = async (req: AuditRequest) => {
@@ -86,15 +89,6 @@ export default function App() {
     setAuditError(null);
   };
 
-  if (statusQuery.isLoading) {
-    return (
-      <div className="h-full flex items-center justify-center" style={{ background: "#f0fdf9" }}>
-        <div className="skeleton w-8 h-8 rounded-full" />
-      </div>
-    );
-  }
-
-  const ready = statusQuery.data?.ready ?? false;
   const accounts = accountsQuery.data ?? [];
   const pt = PAGE_TITLES[activePage];
 

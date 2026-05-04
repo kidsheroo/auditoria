@@ -60,10 +60,8 @@ def _save_refresh_token(token: str):
 
 
 @router.get("/status")
-def status(request: Request):
-    """Returns whether this session has connected — always shows connect screen until OAuth."""
-    ready = bool(request.session.get("connected"))
-    return {"ready": ready}
+def status():
+    return {"ready": False}
 
 
 @router.get("/login")
@@ -119,4 +117,4 @@ def callback(request: Request, code: str = None, state: str = None, error: str =
     except Exception:
         request.session["user_email"] = ""
 
-    return RedirectResponse(f"{FRONTEND_URL}/")
+    return RedirectResponse(f"{FRONTEND_URL}/?connected=1")
