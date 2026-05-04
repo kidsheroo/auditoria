@@ -11,6 +11,7 @@ load_dotenv()
 
 SESSION_SECRET = os.getenv("SESSION_SECRET", "dev-secret-change-me")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+IS_PROD = os.getenv("RAILWAY_ENVIRONMENT") is not None or os.getenv("RENDER") is not None
 
 app = FastAPI(title="Google Ads Waste Auditor")
 
@@ -18,8 +19,8 @@ app.add_middleware(
     SessionMiddleware,
     secret_key=SESSION_SECRET,
     max_age=86400,
-    same_site="lax",
-    https_only=False,
+    same_site="none" if IS_PROD else "lax",
+    https_only=IS_PROD,
 )
 
 app.add_middleware(

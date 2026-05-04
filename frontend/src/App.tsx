@@ -53,7 +53,7 @@ export default function App() {
   const statusQuery = useQuery({
     queryKey: ["status"],
     queryFn: () =>
-      fetch("http://localhost:8000/auth/status", { credentials: "include" })
+      fetch(`${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/auth/status`, { credentials: "include" })
         .then((r) => r.json()) as Promise<{ ready: boolean }>,
   });
 
