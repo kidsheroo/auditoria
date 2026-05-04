@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Account, AuditRequest } from "../api";
 
 interface Props {
@@ -18,7 +18,23 @@ const DATE_RANGES = [
 const STEPS = ["Connecting", "Fetching", "Analyzing", "Scoring"];
 
 function LoadingSkeleton() {
-  const [progress] = useState(42);
+  const [progress, setProgress] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval>>();
+
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 95) {
+          clearInterval(timerRef.current);
+          return prev;
+        }
+        const inc = prev < 30 ? 4 : prev < 60 ? 2.5 : prev < 80 ? 1.5 : 0.4;
+        return Math.min(95, prev + inc);
+      });
+    }, 150);
+    return () => clearInterval(timerRef.current);
+  }, []);
+
   const stepIdx = progress < 25 ? 0 : progress < 50 ? 1 : progress < 75 ? 2 : 3;
 
   return (
