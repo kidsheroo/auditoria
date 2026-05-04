@@ -11,7 +11,7 @@ load_dotenv()
 
 SESSION_SECRET = os.getenv("SESSION_SECRET", "dev-secret-change-me")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
-IS_PROD = os.getenv("RAILWAY_ENVIRONMENT") is not None or os.getenv("RENDER") is not None
+IS_PROD = any(os.getenv(v) for v in ("RAILWAY_ENVIRONMENT", "RENDER", "VERCEL", "VERCEL_ENV"))
 
 app = FastAPI(title="Google Ads Waste Auditor")
 
