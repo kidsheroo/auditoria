@@ -60,9 +60,9 @@ def _save_refresh_token(token: str):
 
 
 @router.get("/status")
-def status():
-    """Returns whether credentials are ready — no login needed if True."""
-    ready = bool(os.environ.get("GOOGLE_REFRESH_TOKEN"))
+def status(request: Request):
+    """Returns whether this session has connected — always shows connect screen until OAuth."""
+    ready = bool(request.session.get("connected"))
     return {"ready": ready}
 
 
