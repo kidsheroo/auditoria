@@ -32,15 +32,7 @@ const PAGE_TITLES: Record<NavPage, { title: string; subtitle: (r: AuditResult | 
 };
 
 const LogoSVG = () => (
-  <svg width="32" height="32" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="lg" x1="2" y1="4" x2="34" y2="32" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#22c55e"/><stop offset="1" stopColor="#06b6d4"/>
-      </linearGradient>
-    </defs>
-    <polygon points="18,4 34,32 2,32" fill="url(#lg)"/>
-    <rect x="10" y="21" width="16" height="3" rx="1.5" fill="white"/>
-  </svg>
+  <img src="/logo.png" width={32} height={32} style={{ objectFit: "contain" }} />
 );
 
 export default function App() {
