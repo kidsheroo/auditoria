@@ -140,6 +140,86 @@ function Card({
   );
 }
 
+const STATIC_TIPS = [
+  {
+    icon: "🔍",
+    title: "Review Search Terms Weekly",
+    description: "Open the Search Terms report every week and add irrelevant terms as negative keywords. Even well-managed accounts accumulate 10–20 new waste terms per week.",
+    action: "Google Ads → Keywords → Search Terms → Add as Negative",
+    color: "red",
+  },
+  {
+    icon: "⏰",
+    title: "Set Ad Schedules by Hour",
+    description: "Check performance by hour of day (Reports → Predefined → Time → Hour of Day). Add negative bid adjustments during your worst-converting windows — often late night and early morning.",
+    action: "Campaign Settings → Ad Schedule → Add time segments",
+    color: "red",
+  },
+  {
+    icon: "📱",
+    title: "Check Device Performance",
+    description: "Compare CPA across Desktop, Mobile, and Tablet in Segment → Device. If mobile CPA is 2× desktop, apply a -30% to -50% mobile bid adjustment to shift budget to where it converts.",
+    action: "Campaign Settings → Devices → Set bid adjustments",
+    color: "red",
+  },
+  {
+    icon: "🎯",
+    title: "Add RLSA Audiences to Search",
+    description: "Layer remarketing lists on your search campaigns (Observation mode). Past site visitors convert 2–5× better than cold traffic. Bid up on them without restricting reach.",
+    action: "Campaign → Audiences → Add audience list (Observation)",
+    color: "green",
+  },
+  {
+    icon: "📝",
+    title: "Enable All Ad Extensions",
+    description: "Sitelinks, callouts, structured snippets, and call extensions improve CTR and Ad Rank at zero extra cost. Campaigns missing extensions pay more per click for the same position.",
+    action: "Ads & Extensions → Extensions → Add missing extension types",
+    color: "green",
+  },
+  {
+    icon: "🏆",
+    title: "Isolate Top Search Terms in Exact Match",
+    description: "Any search term that has 3+ purchases in the last 30 days via Broad Match or PMax should be moved to its own Exact Match ad group. This locks in the CPA and gives full bid control.",
+    action: "Search Terms → Add as Exact Match keyword in new ad group",
+    color: "green",
+  },
+  {
+    icon: "💡",
+    title: "Test 3 Headlines Per RSA",
+    description: "Responsive Search Ads with fewer than 8–10 headline variants give Google's algorithm little to test. Add more diverse headlines — different CTAs, benefits, and offers — to improve Ad Strength.",
+    action: "Ads → Edit RSA → Add headlines until Ad Strength is 'Excellent'",
+    color: "green",
+  },
+];
+
+function StaticTip({ tip }: { tip: typeof STATIC_TIPS[0] }) {
+  const isRed = tip.color === "red";
+  return (
+    <div className="glass rounded-2xl overflow-hidden">
+      <div className={`px-5 py-4 ${isRed ? "bg-red-50/60" : "bg-green-50/60"}`}>
+        <div className="flex items-center gap-2 mb-1">
+          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+            isRed ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"
+          }`}>
+            {isRed ? "Save Money" : "Grow"}
+          </span>
+        </div>
+        <h3 className="font-semibold text-gray-800 text-sm">
+          {tip.icon} {tip.title}
+        </h3>
+      </div>
+      <div className="px-5 py-4 space-y-3">
+        <p className="text-sm text-gray-500 leading-relaxed">{tip.description}</p>
+        <div className="border-t border-white/40 pt-3">
+          <p className="text-xs text-gray-400">
+            Action: <span className="text-gray-600">{tip.action}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function OpportunityDeck({ recommendations }: Props) {
   const [states, setStates] = useState<Record<string, CardState>>({});
   const getState = (id: string): CardState => states[id] ?? "default";
@@ -158,50 +238,66 @@ export default function OpportunityDeck({ recommendations }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-6">
-      {/* Red zone */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-          <h3 className="font-semibold text-gray-800">Quick Wins — Fix These First</h3>
-          {qw.filter((r) => getState(r.id) === "default").length > 0 && (
-            <span className="ml-auto text-xs font-medium bg-red-100 text-red-600 px-2 py-0.5 rounded-full">
-              {qw.filter((r) => getState(r.id) === "default").length} pending
-            </span>
-          )}
+    <div className="space-y-8">
+      <div className="grid grid-cols-2 gap-6">
+        {/* Red zone */}
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+            <h3 className="font-semibold text-gray-800">Quick Wins — Fix These First</h3>
+            {qw.filter((r) => getState(r.id) === "default").length > 0 && (
+              <span className="ml-auto text-xs font-medium bg-red-100 text-red-600 px-2 py-0.5 rounded-full">
+                {qw.filter((r) => getState(r.id) === "default").length} pending
+              </span>
+            )}
+          </div>
+          <div className="space-y-3">
+            {qw.length === 0
+              ? <div className="glass rounded-2xl p-8 text-center text-gray-400 text-sm">No quick wins found.</div>
+              : qw.map((r) => (
+                <Card key={r.id} rec={r} state={getState(r.id)}
+                  onAccept={() => setState(r.id, "accepted")}
+                  onDismiss={() => setState(r.id, "dismissed")}
+                  onUndo={() => setState(r.id, "default")} />
+              ))}
+          </div>
         </div>
-        <div className="space-y-3">
-          {qw.length === 0
-            ? <div className="glass rounded-2xl p-8 text-center text-gray-400 text-sm">No quick wins found.</div>
-            : qw.map((r) => (
-              <Card key={r.id} rec={r} state={getState(r.id)}
-                onAccept={() => setState(r.id, "accepted")}
-                onDismiss={() => setState(r.id, "dismissed")}
-                onUndo={() => setState(r.id, "default")} />
-            ))}
+
+        {/* Green zone */}
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
+            <h3 className="font-semibold text-gray-800">Growth Opportunities</h3>
+            {sc.filter((r) => getState(r.id) === "default").length > 0 && (
+              <span className="ml-auto text-xs font-medium bg-green-100 text-green-600 px-2 py-0.5 rounded-full">
+                {sc.filter((r) => getState(r.id) === "default").length} signals
+              </span>
+            )}
+          </div>
+          <div className="space-y-3">
+            {sc.length === 0
+              ? <div className="glass rounded-2xl p-8 text-center text-gray-400 text-sm">No scaling signals found.</div>
+              : sc.map((r) => (
+                <Card key={r.id} rec={r} state={getState(r.id)}
+                  onAccept={() => setState(r.id, "accepted")}
+                  onDismiss={() => setState(r.id, "dismissed")}
+                  onUndo={() => setState(r.id, "default")} />
+              ))}
+          </div>
         </div>
       </div>
 
-      {/* Green zone */}
+      {/* Static best practices */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
-          <h3 className="font-semibold text-gray-800">Growth Opportunities</h3>
-          {sc.filter((r) => getState(r.id) === "default").length > 0 && (
-            <span className="ml-auto text-xs font-medium bg-green-100 text-green-600 px-2 py-0.5 rounded-full">
-              {sc.filter((r) => getState(r.id) === "default").length} signals
-            </span>
-          )}
+          <span className="w-2.5 h-2.5 rounded-full bg-[#7f7fd5]" />
+          <h3 className="font-semibold text-gray-800">Optimization Playbook</h3>
+          <span className="ml-auto text-xs text-gray-400">Always-on best practices</span>
         </div>
-        <div className="space-y-3">
-          {sc.length === 0
-            ? <div className="glass rounded-2xl p-8 text-center text-gray-400 text-sm">No scaling signals found.</div>
-            : sc.map((r) => (
-              <Card key={r.id} rec={r} state={getState(r.id)}
-                onAccept={() => setState(r.id, "accepted")}
-                onDismiss={() => setState(r.id, "dismissed")}
-                onUndo={() => setState(r.id, "default")} />
-            ))}
+        <div className="grid grid-cols-2 gap-3">
+          {STATIC_TIPS.map((tip) => (
+            <StaticTip key={tip.title} tip={tip} />
+          ))}
         </div>
       </div>
     </div>
