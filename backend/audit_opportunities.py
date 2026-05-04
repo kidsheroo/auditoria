@@ -661,6 +661,184 @@ def _high_ctr_no_conversion_keywords(ga_service, customer_id: str, req: AuditReq
     )]
 
 
+# ── Quick Win #7: Ad Rank impression share loss ───────────────────────────────
+
+def _ad_rank_lost_impressions(ga_service, customer_id: str, req: AuditRequest) -> list[Recommendation]:
+    query = f"""
+        SELECT
+            campaign.name,
+            metrics.cost_micros,
+            metrics.conversions,
+            metrics.search_impression_share,
+            metrics.search_rank_lost_impression_share
+        FROM campaign
+        WHERE segments.date DURING {req.date_range}
+            AND campaign.status = 'ENABLED'
+            AND metrics.cost_micros > 0
+    """
+
+    flagged = []
+    for row in ga_service.search(customer_id=customer_id, query=query):
+        rank_lost = row.metrics.search_rank_lost_impression_share
+        imp_share = row.metrics.search_impression_share
+        cost = row.metrics.cost_micros / 1_000_000
+        if cost < req.min_spend_usd * 3:
+            continue
+        if not rank_lost or rank_lost <= 0 or rank_lost < 0.2:
+            continue
+        flagged.append({
+            "campaign": row.campaign.name,
+            "rank_lost_pct": round(rank_lost * 100, 1),
+            "impression_share_pct": round(imp_share * 100, 1) if imp_share and imp_share > 0 else "N/A",
+            "spend_usd": round(cost, 2),
+            "issue": "Low Ad Rank (quality or bid)",
+        })
+
+    if not flagged:
+        return []
+
+    return [Recommendation(
+        id="ad_rank_lost_impressions",
+        category="quick_win",
+        severity="medium",
+        title=f"Ad Rank Killing Impressions — {len(flagged)} campaigns",
+        description=(
+            "These campaigns are losing 20%+ of eligible impressions because of low Ad Rank "
+            "— not budget. This means competitors with better Quality Scores or higher bids "
+            "are taking your auctions. Fix ad relevance and landing page experience first, "
+            "then raise bids only if QS is already 7+."
+        ),
+        estimated_impact="Recovering lost IS grows reach without increasing budget",
+        action_label="Improve Quality Score: tighten keyword-to-ad-to-landing-page relevance",
+        items=sorted(flagged, key=lambda x: x["rank_lost_pct"], reverse=True),
+    )]
+
+
+# ── Quick Win #8: Spending campaigns without sitelinks ────────────────────────
+
+def _missing_sitelinks(ga_service, customer_id: str, req: AuditRequest) -> list[Recommendation]:
+    sitelink_query = """
+        SELECT campaign.id
+        FROM campaign_asset
+        WHERE campaign_asset.asset_type = 'SITELINK'
+            AND campaign_asset.status = 'ENABLED'
+            AND campaign.status = 'ENABLED'
+    """
+    campaigns_with_sitelinks: set[str] = set()
+    for row in ga_service.search(customer_id=customer_id, query=sitelink_query):
+        campaigns_with_sitelinks.add(str(row.campaign.id))
+
+    spend_query = f"""
+        SELECT
+            campaign.id,
+            campaign.name,
+            metrics.cost_micros,
+            metrics.conversions
+        FROM campaign
+        WHERE segments.date DURING {req.date_range}
+            AND campaign.status = 'ENABLED'
+            AND metrics.cost_micros > 0
+    """
+
+    missing = []
+    for row in ga_service.search(customer_id=customer_id, query=spend_query):
+        cid = str(row.campaign.id)
+        if cid in campaigns_with_sitelinks:
+            continue
+        cost = row.metrics.cost_micros / 1_000_000
+        if cost < req.min_spend_usd * 5:
+            continue
+        missing.append({
+            "campaign": row.campaign.name,
+            "spend_usd": round(cost, 2),
+            "issue": "No sitelink assets",
+        })
+
+    if not missing:
+        return []
+
+    total = sum(m["spend_usd"] for m in missing)
+    return [Recommendation(
+        id="missing_sitelinks",
+        category="quick_win",
+        severity="medium",
+        title=f"Campaigns Without Sitelinks — {len(missing)} campaigns",
+        description=(
+            "These spending campaigns have no sitelink extensions. "
+            "Sitelinks expand your ad, improve CTR by 10–20%, and cost nothing extra. "
+            "They also improve Ad Rank, meaning you pay less per click for the same position."
+        ),
+        estimated_impact=f"${total:.0f} in spend without sitelinks — add them to cut CPC and lift CTR",
+        action_label="Add sitelinks via Ads & Assets → Assets → Sitelinks",
+        items=sorted(missing, key=lambda x: x["spend_usd"], reverse=True),
+    )]
+
+
+# ── Scaling #6: Broad-match dominance — no exact/phrase coverage ──────────────
+
+def _broad_match_dominance(ga_service, customer_id: str, req: AuditRequest) -> list[Recommendation]:
+    query = f"""
+        SELECT
+            campaign.id,
+            campaign.name,
+            ad_group_criterion.keyword.match_type,
+            metrics.cost_micros,
+            metrics.conversions
+        FROM keyword_view
+        WHERE segments.date DURING {req.date_range}
+            AND campaign.status = 'ENABLED'
+            AND ad_group.status = 'ENABLED'
+            AND ad_group_criterion.status = 'ENABLED'
+            AND metrics.cost_micros > 0
+    """
+
+    campaign_spend: dict[str, dict] = defaultdict(lambda: {"name": "", "broad": 0.0, "total": 0.0, "convs": 0.0})
+    for row in ga_service.search(customer_id=customer_id, query=query):
+        cid = str(row.campaign.id)
+        match_type = str(row.ad_group_criterion.keyword.match_type).split(".")[-1]
+        cost = row.metrics.cost_micros / 1_000_000
+        campaign_spend[cid]["name"] = row.campaign.name
+        campaign_spend[cid]["total"] += cost
+        campaign_spend[cid]["convs"] += row.metrics.conversions
+        if match_type == "BROAD":
+            campaign_spend[cid]["broad"] += cost
+
+    flagged = []
+    for cid, data in campaign_spend.items():
+        if data["total"] < req.min_spend_usd * 5:
+            continue
+        broad_pct = data["broad"] / data["total"] if data["total"] > 0 else 0
+        if broad_pct < 0.8:
+            continue
+        cpa = data["total"] / data["convs"] if data["convs"] > 0 else None
+        flagged.append({
+            "campaign": data["name"],
+            "broad_match_pct": round(broad_pct * 100, 1),
+            "spend_usd": round(data["total"], 2),
+            "cpa_usd": round(cpa, 2) if cpa else "No conversions",
+            "risk": "High — broad match without exact/phrase coverage",
+        })
+
+    if not flagged:
+        return []
+
+    total = sum(f["spend_usd"] for f in flagged)
+    return [Recommendation(
+        id="broad_match_dominance",
+        category="scaling",
+        severity="medium",
+        title=f"Broad-Match-Only Campaigns — {len(flagged)} campaigns",
+        description=(
+            "These campaigns have 80%+ of spend on Broad Match with no Exact or Phrase Match coverage. "
+            "Broad Match alone is fine with Smart Bidding, but your top-converting search terms "
+            "should also exist as Exact Match keywords to anchor CPCs and protect margin on your best traffic."
+        ),
+        estimated_impact="Add Exact Match for top terms to stabilize CPAs and protect margin",
+        action_label="Extract top search terms → add as Exact Match in dedicated ad groups",
+        items=sorted(flagged, key=lambda x: x["spend_usd"], reverse=True),
+    )]
+
+
 # ── Entry point ───────────────────────────────────────────────────────────────
 
 def run_opportunity_audit(ga_service, customer_id: str, req: AuditRequest) -> list[Recommendation]:
@@ -677,6 +855,9 @@ def run_opportunity_audit(ga_service, customer_id: str, req: AuditRequest) -> li
         _bidding_headroom,
         _single_ad_ad_groups,
         _high_ctr_no_conversion_keywords,
+        _ad_rank_lost_impressions,
+        _missing_sitelinks,
+        _broad_match_dominance,
     ]:
         _safe_extend(results, fn, ga_service, customer_id, req)
     return results

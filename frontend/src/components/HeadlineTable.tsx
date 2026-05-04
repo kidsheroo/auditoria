@@ -6,89 +6,92 @@ interface Props {
   pinningIssues: RsaPinningIssue[];
 }
 
-const STATUS_STYLE: Record<string, string> = {
-  winner: "bg-green-100/70 text-green-700",
-  average: "bg-yellow-100/70 text-yellow-700",
-  bleeder: "tag-high-cpa",
-  testing: "bg-gray-100/70 text-gray-500",
-};
-const STATUS_ICON: Record<string, string> = {
-  winner: "🟢", average: "🟡", bleeder: "🔴", testing: "⚪",
-};
-const LABEL: Record<string, string> = {
-  BEST: "Best", GOOD: "Good", LOW: "Low",
-  LEARNING: "Learning", UNSPECIFIED: "No data", UNKNOWN: "No data",
-};
+const FILTER_TABS = [
+  { value: "all",     label: "All" },
+  { value: "winner",  label: "Winners" },
+  { value: "bleeder", label: "Bleeders" },
+  { value: "testing", label: "Testing" },
+] as const;
 
-function usd(n: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+type FilterTab = typeof FILTER_TABS[number]["value"];
+
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, { cls: string; icon: string; label: string }> = {
+    winner:  { cls: "hl-winner",  icon: "★", label: "Winner" },
+    bleeder: { cls: "hl-bleeder", icon: "↓", label: "Bleeder" },
+    average: { cls: "hl-average", icon: "–", label: "Average" },
+    testing: { cls: "hl-testing", icon: "○", label: "Testing" },
+  };
+  const m = map[status] ?? { cls: "hl-average", icon: "–", label: status };
+  return <span className={m.cls}>{m.icon} {m.label}</span>;
 }
 
 export default function HeadlineTable({ headlines, pinningIssues }: Props) {
-  const [filter, setFilter] = useState<"all" | "bleeder" | "winner" | "clickbait">("all");
+  const [filter, setFilter] = useState<FilterTab>("all");
   const [search, setSearch] = useState("");
 
   const filtered = headlines.filter((h) => {
-    if (filter === "bleeder" && h.status !== "bleeder") return false;
-    if (filter === "winner" && h.status !== "winner") return false;
-    if (filter === "clickbait" && !h.is_clickbait) return false;
+    if (filter !== "all" && h.status !== filter) return false;
     if (search && !h.headline_text.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
-  const counts = {
-    all: headlines.length,
+  const counts: Record<FilterTab, number> = {
+    all:     headlines.length,
+    winner:  headlines.filter((h) => h.status === "winner").length,
     bleeder: headlines.filter((h) => h.status === "bleeder").length,
-    winner: headlines.filter((h) => h.status === "winner").length,
-    clickbait: headlines.filter((h) => h.is_clickbait).length,
+    testing: headlines.filter((h) => h.status === "testing").length,
   };
 
   if (headlines.length === 0) {
     return (
       <div className="text-center py-16 text-gray-400">
-        <p className="font-medium">No RSA headline data found.</p>
-        <p className="text-sm mt-1">Headlines appear after your ads run and collect performance data.</p>
+        <p className="text-[13px] font-medium">No RSA headline data found.</p>
+        <p className="text-[11px] mt-1">Headlines appear after your ads run and collect performance data.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5">
-      {/* Filter chips + search */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {(["all", "bleeder", "winner", "clickbait"] as const).map((f) => {
-          const labels = { all: `All (${counts.all})`, bleeder: `🔴 Bleeders (${counts.bleeder})`, winner: `🟢 Winners (${counts.winner})`, clickbait: `⚠ Clickbait (${counts.clickbait})` };
-          return (
+    <div className="space-y-4">
+      {/* Filter tabs + search */}
+      <div className="flex items-center gap-3">
+        <div className="flex gap-1 p-1 glass-light rounded-xl">
+          {FILTER_TABS.map((tab) => (
             <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all glass-light ${
-                filter === f ? "ring-2 ring-[#7f7fd5] text-[#7f7fd5]" : "text-gray-500"
+              key={tab.value}
+              onClick={() => setFilter(tab.value)}
+              className={`px-3.5 py-1.5 rounded-lg text-[12px] font-medium transition-all ${
+                filter === tab.value
+                  ? "btn-gradient text-white shadow-sm"
+                  : "text-gray-500 hover:bg-white/50"
               }`}
             >
-              {labels[f]}
+              {tab.label}
+              <span className={`ml-1.5 text-[10px] ${filter === tab.value ? "text-white/80" : "text-gray-400"}`}>
+                {counts[tab.value]}
+              </span>
             </button>
-          );
-        })}
+          ))}
+        </div>
         <input
           type="text"
           placeholder="Search headlines..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="ml-auto glass-light rounded-xl px-3 py-1.5 text-sm w-52 focus:outline-none focus:ring-2 focus:ring-[#7f7fd5]/30"
+          className="ml-auto glass-light rounded-xl px-3 py-1.5 text-[12px] text-gray-700 focus:outline-none w-48"
         />
       </div>
 
-      {/* Table */}
       {filtered.length === 0 ? (
-        <div className="text-center py-10 text-gray-400 text-sm">No headlines match.</div>
+        <div className="text-center py-10 text-[12px] text-gray-400">No headlines match.</div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-white/40">
-          <table className="w-full text-sm audit-table">
+        <div className="glass rounded-2xl overflow-hidden">
+          <table className="w-full audit-table">
             <thead>
-              <tr className="bg-white/30">
-                {["Headline", "Campaign / Ad Group", "Label", "Status", "Pinned", "Recommendation"].map((h) => (
-                  <th key={h} className="text-left px-4 py-3 font-medium text-gray-500">{h}</th>
+              <tr className="bg-white/20">
+                {["Headline", "Campaign / Ad Group", "Performance", "Status", "Pinned", "Action"].map((h) => (
+                  <th key={h} className="text-left px-4 py-3">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -96,31 +99,37 @@ export default function HeadlineTable({ headlines, pinningIssues }: Props) {
               {filtered.map((h, i) => (
                 <tr key={i}>
                   <td className="px-4 py-3">
-                    <div className="font-medium text-gray-800 max-w-[200px]">"{h.headline_text}"</div>
+                    <div className="text-[13px] font-medium text-gray-800 max-w-[220px] leading-snug">
+                      "{h.headline_text}"
+                    </div>
                     {h.is_clickbait && (
                       <div className="flex gap-1 mt-1 flex-wrap">
                         {h.clickbait_flags.map((f) => (
-                          <span key={f} className="px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 text-xs">{f}</span>
+                          <span key={f} className="px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 text-[10px]">
+                            {f}
+                          </span>
                         ))}
                       </div>
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="text-gray-700 text-sm">{h.campaign}</div>
-                    <div className="text-xs text-gray-400">{h.ad_group}</div>
+                    <div className="text-[12px] text-gray-700">{h.campaign}</div>
+                    <div className="text-[11px] text-gray-400 mt-0.5">{h.ad_group}</div>
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-500">{LABEL[h.performance_label] ?? h.performance_label}</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_STYLE[h.status] ?? ""}`}>
-                      {STATUS_ICON[h.status]} {h.status.charAt(0).toUpperCase() + h.status.slice(1)}
-                    </span>
+                    <span className="text-[11px] text-gray-500">{h.performance_label}</span>
                   </td>
-                  <td className="px-4 py-3 text-xs">
+                  <td className="px-4 py-3">
+                    <StatusBadge status={h.status} />
+                  </td>
+                  <td className="px-4 py-3 text-[12px]">
                     {h.pinned_position
-                      ? <span className="text-[#7f7fd5] font-medium">{h.pinned_position.replace("HEADLINE_", "H")}</span>
+                      ? <span className="text-[#22c55e] font-medium">{h.pinned_position.replace("HEADLINE_", "H")}</span>
                       : <span className="text-gray-300">—</span>}
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-500 max-w-xs leading-relaxed">{h.recommendation}</td>
+                  <td className="px-4 py-3 text-[11px] text-gray-500 max-w-[180px] leading-relaxed">
+                    {h.recommendation}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -128,34 +137,35 @@ export default function HeadlineTable({ headlines, pinningIssues }: Props) {
         </div>
       )}
 
-      {/* Pinning issues */}
       {pinningIssues.length > 0 && (
-        <div>
-          <h3 className="font-semibold text-gray-700 text-sm mb-3">
-            ⚠ {pinningIssues.length} RSA ads with no pinned headlines
-          </h3>
-          <div className="overflow-x-auto rounded-2xl border border-orange-200/60 bg-orange-50/40">
-            <table className="w-full text-sm audit-table">
-              <thead>
-                <tr className="bg-orange-50/60">
-                  {["Ad", "Campaign", "Spend", "Conversions", "Recommendation"].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 font-medium text-orange-600 text-xs">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {pinningIssues.map((p, i) => (
-                  <tr key={i}>
-                    <td className="px-4 py-3 font-medium text-gray-800">{p.ad_name}</td>
-                    <td className="px-4 py-3 text-gray-600 text-sm">{p.campaign}</td>
-                    <td className="px-4 py-3 font-semibold text-[#ff2e6a]">{usd(p.cost_usd)}</td>
-                    <td className="px-4 py-3 text-gray-600">{p.conversions}</td>
-                    <td className="px-4 py-3 text-xs text-gray-500 max-w-xs">{p.recommendation}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="glass rounded-2xl overflow-hidden">
+          <div className="px-5 py-3 border-b border-orange-100/60" style={{ background: "rgba(251,146,60,0.06)" }}>
+            <span className="text-[12px] font-semibold text-orange-600">
+              ⚠ {pinningIssues.length} RSA ads with no pinned headlines
+            </span>
           </div>
+          <table className="w-full audit-table">
+            <thead>
+              <tr style={{ background: "rgba(251,146,60,0.04)" }}>
+                {["Ad", "Campaign", "Spend", "Conversions", "Recommendation"].map((h) => (
+                  <th key={h} className="text-left px-4 py-3 text-orange-500">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {pinningIssues.map((p, i) => (
+                <tr key={i}>
+                  <td className="px-4 py-3 text-[12px] font-medium text-gray-800">{p.ad_name}</td>
+                  <td className="px-4 py-3 text-[12px] text-gray-600">{p.campaign}</td>
+                  <td className="px-4 py-3 text-[12px] font-semibold text-[#ff2e6a]">
+                    {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(p.cost_usd)}
+                  </td>
+                  <td className="px-4 py-3 text-[12px] text-gray-600">{p.conversions}</td>
+                  <td className="px-4 py-3 text-[11px] text-gray-500 max-w-xs leading-relaxed">{p.recommendation}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

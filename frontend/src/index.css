@@ -11,48 +11,52 @@ html, body, #root {
 
 body {
   background:
-    radial-gradient(circle at 15% 25%, #d1fae5 0%, transparent 45%),
-    radial-gradient(circle at 85% 15%, #bfdbfe 0%, transparent 45%),
-    linear-gradient(135deg, #f0fdf4, #eff6ff, #ecfeff);
+    radial-gradient(ellipse 60% 50% at 10% 0%, rgba(34,197,94,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 90% 0%, rgba(6,182,212,0.10) 0%, transparent 70%),
+    #f0fdf9;
 }
 
-/* Orb — teal/blue to match logo */
-.orb {
-  position: fixed;
-  width: 320px;
-  height: 320px;
-  background: radial-gradient(circle, #6ee7b7, #38bdf8);
-  filter: blur(90px);
-  opacity: 0.3;
-  top: 40px;
-  right: 60px;
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* Glass */
+/* ── Glass utilities ── */
 .glass {
-  background: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.65);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.85);
 }
 
 .glass-light {
   background: rgba(255,255,255,0.7);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.6);
 }
 
-/* Gradient text — green to blue matching logo */
+.glass-topbar {
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(34,197,94,0.1);
+}
+
+.glass-sidebar {
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255,255,255,0.85);
+}
+
+/* ── Gradient utilities ── */
 .gradient-text {
-  background: linear-gradient(135deg, #16a34a, #0284c7);
+  background: linear-gradient(135deg, #22c55e, #06b6d4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Primary button gradient */
+.gradient-bg {
+  background: linear-gradient(135deg, #22c55e, #06b6d4);
+}
+
 .btn-gradient {
   background: linear-gradient(135deg, #22c55e, #06b6d4);
   color: white;
@@ -62,40 +66,73 @@ body {
 }
 .btn-gradient:hover { opacity: 0.88; }
 
-/* Nav active state */
 .nav-active {
   background: linear-gradient(135deg, #22c55e, #06b6d4) !important;
-  color: white !important;
 }
 
-/* Reason badges */
+/* ── Badges ── */
 .tag-high-cpa {
   display: inline-block;
-  padding: 4px 12px;
-  border-radius: 10px;
-  background: rgba(239,68,68,0.12);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: rgba(220,38,38,0.1);
   color: #dc2626;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 10px;
+  font-weight: 600;
 }
 .tag-zero-conv {
   display: inline-block;
-  padding: 4px 12px;
-  border-radius: 10px;
-  background: rgba(14,165,233,0.12);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: rgba(2,132,199,0.1);
   color: #0284c7;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 10px;
+  font-weight: 600;
 }
 
-/* Scrollable main */
+/* ── Skeleton shimmer ── */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(209,250,229,0.6) 25%,
+    rgba(167,243,208,0.8) 50%,
+    rgba(209,250,229,0.6) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* ── Scrollbars ── */
 .main-scroll {
   overflow-y: auto;
   height: 100%;
 }
 .main-scroll::-webkit-scrollbar { width: 5px; }
-.main-scroll::-webkit-scrollbar-thumb { background: rgba(34,197,94,0.25); border-radius: 10px; }
+.main-scroll::-webkit-scrollbar-thumb { background: rgba(34,197,94,0.2); border-radius: 10px; }
 
-/* Table */
+/* ── Table ── */
 .audit-table tbody tr { border-top: 1px solid rgba(0,0,0,0.04); }
-.audit-table tbody tr:hover { background: rgba(255,255,255,0.45); }
+.audit-table tbody tr:hover td { background: rgba(255,255,255,0.45); }
+.audit-table th {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9ca3af;
+}
+
+/* ── Match type badges ── */
+.match-broad  { background: rgba(239,68,68,0.1);  color: #dc2626; padding: 2px 7px; border-radius: 9999px; font-size: 9px; font-weight: 700; }
+.match-phrase { background: rgba(234,179,8,0.15); color: #b45309; padding: 2px 7px; border-radius: 9999px; font-size: 9px; font-weight: 700; }
+.match-exact  { background: rgba(34,197,94,0.15); color: #16a34a; padding: 2px 7px; border-radius: 9999px; font-size: 9px; font-weight: 700; }
+
+/* ── Headline status badges ── */
+.hl-winner  { background: rgba(34,197,94,0.1);  color: #16a34a; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: 600; }
+.hl-bleeder { background: rgba(255,46,106,0.1);  color: #ff2e6a; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: 600; }
+.hl-average { background: rgba(156,163,175,0.15); color: #6b7280; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: 600; }
+.hl-testing { background: rgba(234,179,8,0.12);  color: #b45309; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: 600; }
