@@ -30,7 +30,7 @@ export default function ConnectScreen() {
   return (
     <div className="h-full flex" style={{ background: "#f0fdf9" }}>
       {/* Left panel */}
-      <div className="flex flex-col justify-center" style={{ width: 520, padding: "64px 56px" }}>
+      <div className="flex flex-col justify-start" style={{ width: 520, padding: "72px 56px 64px" }}>
         {/* Logo */}
         <div className="flex items-center gap-2.5 mb-14">
           <LogoSVG />
@@ -73,65 +73,68 @@ export default function ConnectScreen() {
       </div>
 
       {/* Right panel — preview card */}
-      <div className="flex-1 flex items-center justify-center relative">
-        {/* Main preview card */}
-        <div
-          className="glass rounded-2xl overflow-hidden"
-          style={{
-            width: 340,
-            transform: "rotate(1.5deg)",
-            boxShadow: "0 16px 64px rgba(34,197,94,0.12)",
-          }}
-        >
-          <div className="p-5 pb-3">
-            <div className="text-[11px] text-gray-400 mb-1.5">Total Wasted Spend</div>
-            <div className="gradient-text text-[40px] font-bold leading-none mb-1">$18,420</div>
-            <div className="text-[11px] text-gray-400">across 47 wasting entities</div>
+      <div className="flex-1 flex items-start justify-center" style={{ paddingTop: 72 }}>
+        {/* Card + badges in a single relative wrapper */}
+        <div className="relative" style={{ padding: "24px 56px 36px 44px" }}>
+          {/* Main preview card */}
+          <div
+            className="glass rounded-2xl overflow-hidden"
+            style={{
+              width: 400,
+              transform: "rotate(1.5deg)",
+              boxShadow: "0 20px 72px rgba(34,197,94,0.15)",
+            }}
+          >
+            <div className="p-6 pb-4">
+              <div className="text-[12px] text-gray-400 mb-2">Total Wasted Spend</div>
+              <div className="gradient-text text-[48px] font-bold leading-none mb-1.5">$18,420</div>
+              <div className="text-[12px] text-gray-400">across 47 wasting entities</div>
+            </div>
+            <div style={{ height: 1, background: "#e5e7eb" }} />
+            <div className="p-5 flex flex-col gap-3">
+              {PREVIEW_ENTITIES.map((e) => (
+                <div key={e.label} className="flex items-center gap-2.5">
+                  <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: e.color }} />
+                  <div className="flex-1 text-[13px] text-gray-800">{e.label}</div>
+                  <div className="text-[12px] text-gray-400">{e.count} items</div>
+                  <div className="text-[13px] font-semibold" style={{ color: e.color }}>{e.cost}</div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div style={{ height: 1, background: "#e5e7eb" }} />
-          <div className="p-4 flex flex-col gap-2">
-            {PREVIEW_ENTITIES.map((e) => (
-              <div key={e.label} className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-sm flex-shrink-0" style={{ background: e.color }} />
-                <div className="flex-1 text-[12px] text-gray-800">{e.label}</div>
-                <div className="text-[11px] text-gray-400">{e.count} items</div>
-                <div className="text-[12px] font-semibold" style={{ color: e.color }}>{e.cost}</div>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Quick wins badge */}
-        <div
-          className="absolute"
-          style={{
-            top: "28%", right: "10%",
-            background: "rgba(255,46,106,0.08)",
-            border: "1px solid rgba(255,46,106,0.2)",
-            borderRadius: 12,
-            padding: "8px 14px",
-            transform: "rotate(-2deg)",
-          }}
-        >
-          <div className="text-[10px] font-semibold" style={{ color: "#ff2e6a" }}>
-            ⚡ 12 Quick Wins found
+          {/* Quick wins badge — top-right edge of card */}
+          <div
+            className="absolute"
+            style={{
+              top: 12, right: 0,
+              background: "rgba(255,46,106,0.08)",
+              border: "1px solid rgba(255,46,106,0.2)",
+              borderRadius: 12,
+              padding: "8px 14px",
+              transform: "rotate(-2deg)",
+            }}
+          >
+            <div className="text-[10px] font-semibold" style={{ color: "#ff2e6a" }}>
+              ⚡ 12 Quick Wins found
+            </div>
           </div>
-        </div>
 
-        {/* Audit complete badge */}
-        <div
-          className="absolute"
-          style={{
-            bottom: "22%", left: "8%",
-            background: "rgba(34,197,94,0.08)",
-            border: "1px solid rgba(34,197,94,0.2)",
-            borderRadius: 12,
-            padding: "8px 14px",
-            transform: "rotate(1deg)",
-          }}
-        >
-          <div className="text-[10px] font-semibold" style={{ color: "#22c55e" }}>
-            ✓ Audit complete in 8s
+          {/* Audit complete badge — bottom-left edge of card */}
+          <div
+            className="absolute"
+            style={{
+              bottom: 12, left: 0,
+              background: "rgba(34,197,94,0.08)",
+              border: "1px solid rgba(34,197,94,0.2)",
+              borderRadius: 12,
+              padding: "8px 14px",
+              transform: "rotate(1deg)",
+            }}
+          >
+            <div className="text-[10px] font-semibold" style={{ color: "#22c55e" }}>
+              ✓ Audit complete in 8s
+            </div>
           </div>
         </div>
       </div>
