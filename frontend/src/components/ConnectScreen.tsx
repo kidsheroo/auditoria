@@ -53,7 +53,7 @@ export default function ConnectScreen() {
         </p>
 
         <button
-          onClick={() => { window.location.href = "http://localhost:8000/auth/login"; }}
+          onClick={() => { window.location.href = `${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/auth/login`; }}
           className="flex items-center gap-4 rounded-[18px] text-white font-semibold text-[18px] cursor-pointer transition-opacity hover:opacity-90"
           style={{
             background: "linear-gradient(135deg, #22c55e, #06b6d4)",
