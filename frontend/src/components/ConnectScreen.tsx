@@ -1,13 +1,5 @@
 const LogoSVG = () => (
-  <svg width="54" height="54" viewBox="0 0 36 36" fill="none">
-    <defs>
-      <linearGradient id="lg-c" x1="2" y1="4" x2="34" y2="32" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#22c55e"/><stop offset="1" stopColor="#06b6d4"/>
-      </linearGradient>
-    </defs>
-    <polygon points="18,4 34,32 2,32" fill="url(#lg-c)"/>
-    <rect x="10" y="21" width="16" height="3" rx="1.5" fill="white"/>
-  </svg>
+  <img src="/logo.png" width={54} height={54} style={{ objectFit: "contain" }} />
 );
 
 const GoogleIcon = () => (
