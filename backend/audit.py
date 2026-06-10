@@ -4,6 +4,7 @@ from ads_client import build_client
 from models import AuditRequest, AuditResult, WastingItem
 from audit_headlines import run_headline_audit
 from audit_opportunities import run_opportunity_audit
+from audit_health import run_health_audit
 
 
 def _micros_to_usd(micros: int) -> float:
@@ -249,6 +250,10 @@ def run_audit(tokens: dict, req: AuditRequest) -> AuditResult:
 
         # Quick wins + scaling opportunities
         recommendations = run_opportunity_audit(ga_service, req.customer_id, req)
+
+        # Health & coverage checks (Google native recs, conversion tracking,
+        # disapproved ads, negative-keyword hygiene, Shopping/PMax)
+        recommendations.extend(run_health_audit(ga_service, req.customer_id, req))
 
         return AuditResult(
             account_id=req.customer_id,
